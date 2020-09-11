@@ -28,11 +28,13 @@ go get github.com/eavesmy/puppy
 package main
 
 import "github.com/eavesmy/puppy"
+import "fmt"
 
 func main(){
 
     node := puppy.New(puppy.Conf{
         Root:    "ip:port,ip2:port",
+        Name:    "user.name",
         Group:   1,
         Version: 1,
         Type:    1,
@@ -46,7 +48,9 @@ func main(){
         return ctx.Call("name")
     })
 
-    node.Start(":8080")
+    if err := node.Run(":8080"); err != nil {
+        fmt.Println(err)
+    }
 }
 
 ```
