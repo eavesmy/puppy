@@ -13,7 +13,28 @@ type Router struct {
 	mds        []Middleware
 	middleware Middleware
 	trie       *trie.Trie
+	Root       string
 	// rpcMethods []rpc_method
+}
+
+func NewRouter(confs ...RouterConf) *Router {
+
+	conf := DefaultRouterConf()
+
+	if len(confs) > 0 {
+		conf = confs[0]
+	}
+
+	if conf.Root == "" || conf.Root[len(conf.Root)-1] != '/' {
+		conf.Root += "/"
+	}
+
+	return &Router{mds: make([]Middleware, 0), trie: trie.New(trie.Options{
+		IgnoreCase:            conf.IgnoreCase,
+		FixedPathRedirect:     conf.FixedPathRedirect,
+		TrailingSlashRedirect: conf.TrailingSlashRedirect,
+	}), Root: conf.Root}
+
 }
 
 // rpc 调用的只能是一个带有返回值的函数
@@ -43,16 +64,21 @@ func (r *Router) Get(pattern string, handlers ...Middleware) *Router {
 	return r.Handle(http.MethodGet, pattern, handlers...)
 }
 
-func (r *Router) Post() {
+func (r *Router) Post(pattern string, handlers ...Middleware) *Router {
+	return r.Handle(http.MethodPost, pattern, handlers...)
+}
+
+func (r *Router) Put(pattern string, handlers ...Middleware) *Router {
+	return r.Handle(http.MethodPut, pattern, handlers...)
 
 }
 
-func (r *Router) Put() {
-
+func (r *Router) Delete(pattern string, handlers ...Middleware) *Router {
+	return r.Handle(http.MethodDelete, pattern, handlers...)
 }
 
-func (r *Router) Delete() {
-
+func (r *Router) Options(pattern string, handlers ...Middleware) *Router {
+	return r.Handle(http.MethodOptions, pattern, handlers...)
 }
 
 func (r *Router) Handle(method, pattern string, handlers ...Middleware) *Router {

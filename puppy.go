@@ -45,6 +45,11 @@ func (p *Puppy) Use(m Middleware) *Puppy {
 	return p
 }
 
+func (p *Puppy) UseHandle(m Handler) *Puppy {
+	p.mds = append(p.mds, m.Serve)
+	return p
+}
+
 func (p *Puppy) Run(h_ps ...string) error {
 
 	if len(h_ps) > 0 {

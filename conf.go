@@ -26,3 +26,19 @@ func DefaultConf() Conf {
 		addr:              ":8080",
 	}
 }
+
+type RouterConf struct {
+	Root                  string
+	IgnoreCase            bool
+	FixedPathRedirect     bool
+	TrailingSlashRedirect bool
+}
+
+func DefaultRouterConf() RouterConf {
+	return RouterConf{
+		Root:                  "/",
+		IgnoreCase:            true,
+		FixedPathRedirect:     true,
+		TrailingSlashRedirect: true,
+	}
+}

@@ -13,22 +13,17 @@ type Server struct {
 }
 
 func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-
+	ctx := NewHttpContext(req, res)
+	s.core.mds.run(ctx)
 }
 
 func (s *Server) Listen(p *Puppy) (err error) {
 
+	s.core = p
+
 	isHttp := p.Conf.Http
 
-	protocol := ""
-
-	if isHttp {
-		protocol = "http"
-	} else {
-		protocol = "tcp"
-	}
-
-	ln, err := net.Listen(protocol, p.Conf.addr)
+	ln, err := net.Listen("tcp", p.Conf.addr)
 
 	if err != nil {
 		panic(err)
@@ -58,7 +53,7 @@ func (s *Server) Serve(ln net.Listener) {
 
 		if err != nil {
 			// 请求失败
-			break
+			continue
 		}
 
 		ctx := NewContext(conn, s)
