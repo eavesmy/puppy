@@ -72,13 +72,18 @@ func (c *Context) ParseBody() {
 
 }
 
-func (c *Context) Call()   {}
+func (c *Context) Call(pattern string, arg interface{}) {
+	// 查找对应路由，拿到节点
+	// 校验参数,判断参数
+}
+
 func (c *Context) ReCall() {}
-func (c *Context) Json()   {}
+
+func (c *Context) Json() {}
 
 func (c *Context) Text(text string, statusCodes ...int) (err error) {
 
-	statusCode = 200
+	statusCode := 200
 	if len(statusCodes) > 0 {
 		statusCode = statusCodes[2]
 	}

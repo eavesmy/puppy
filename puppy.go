@@ -1,6 +1,8 @@
 package puppy
 
 import (
+	"fmt"
+	"github.com/teambition/trie-mux"
 	"time"
 )
 
@@ -15,6 +17,7 @@ type Puppy struct {
 	Conf   Conf
 	mds    middlewares
 	router *Router
+	trie   *trie.Trie
 }
 
 // Init socket server.
@@ -36,7 +39,11 @@ func New(confs ...Conf) *Puppy {
 		}
 	}
 
-	return &Puppy{Conf: conf, Server: &Server{}}
+	return &Puppy{Conf: conf, Server: &Server{}, trie: trie.New(trie.Options{
+		IgnoreCase:            conf.IngoreCase,
+		FixedPathRedirect:     false,
+		TrailingSlashRedirect: false,
+	})}
 }
 
 // Load middleware
@@ -50,6 +57,14 @@ func (p *Puppy) UseHandle(m Handler) *Puppy {
 	return p
 }
 
+func (p *Puppy) MarshalByHand() {
+
+}
+
+func (p *Puppy) ParseByHand() {
+
+}
+
 func (p *Puppy) Run(h_ps ...string) error {
 
 	if len(h_ps) > 0 {
@@ -59,7 +74,17 @@ func (p *Puppy) Run(h_ps ...string) error {
 	return p.Server.Listen(p)
 }
 
-func (p *Puppy) Rpc(pattern string, fn func(*Context, interface{}) interface{}) {
+// func(*Context,interface{}) interface{}
+
+func (p *Puppy) Rpc(pattern string, fn Rpc) {
+
+	method, err := MarshalRpcMethod(pattern, fn)
+
+	if err != nil {
+		panic("Invalid rpc method: " + err.Error())
+	}
+
+	fmt.Println(method)
 
 	return
 }

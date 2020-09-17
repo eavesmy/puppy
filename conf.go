@@ -16,6 +16,8 @@ type Conf struct {
 	Node              string
 	addr              string
 	Http              bool
+
+	IngoreCase bool
 }
 
 func DefaultConf() Conf {
