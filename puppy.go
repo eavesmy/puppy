@@ -3,13 +3,6 @@ package puppy
 import (
 	"fmt"
 	"github.com/teambition/trie-mux"
-	"time"
-)
-
-const (
-	DEFAULT_MAXRECONNECTCOUNT int           = 5
-	DEFAULT_RECONNECTTIMEOUT  time.Duration = time.Second * 5
-	DEFAULT_BUFFERSIZE        int           = 512
 )
 
 type Puppy struct {

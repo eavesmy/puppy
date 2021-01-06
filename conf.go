@@ -2,6 +2,12 @@ package puppy
 
 import "time"
 
+const (
+	DEFAULT_MAXRECONNECTCOUNT int           = 5
+	DEFAULT_RECONNECTTIMEOUT  time.Duration = time.Second * 5
+	DEFAULT_BUFFERSIZE        int           = 512
+)
+
 type Conf struct {
 	Id      int64 // 框架给每个 service 分配的唯一id
 	Name    string

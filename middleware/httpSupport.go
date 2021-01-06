@@ -14,6 +14,9 @@ func HttpSupport(ctx *puppy.Context) error {
 	}
 
 	ctx.Req = req
+	ctx.Method = req.Method
+	ctx.Path = req.RequestURI
+
 	ctx.Res = puppy.Res{
 		Headers:    http.Header{},
 		Context:    ctx,

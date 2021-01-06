@@ -28,5 +28,5 @@ func (r Res) SetHeader(k, v string) {
 }
 
 func (r Res) WriteHeader(statusCode int) {
-	r.StatusCode = statusCode
+	r.Context.Set("StatusCode", statusCode)
 }

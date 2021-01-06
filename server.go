@@ -22,7 +22,7 @@ func (s *Server) Listen(p *Puppy) (err error) {
 
 	s.core = p
 
-	isHttp := p.Conf.Http
+	// isHttp := p.Conf.Http
 
 	ln, err := net.Listen("tcp", p.Conf.addr)
 
@@ -32,12 +32,12 @@ func (s *Server) Listen(p *Puppy) (err error) {
 
 	fmt.Println("server start at", p.Conf.addr)
 
-	if isHttp {
-		ln.Addr()
-		err = http.Serve(ln, s)
-	} else {
-		s.Serve(ln)
-	}
+	// if isHttp {
+	// ln.Addr()
+	// err = http.Serve(ln, s)
+	// } else {
+	s.Serve(ln)
+	// }
 
 	if err != nil {
 		return
@@ -58,6 +58,6 @@ func (s *Server) Serve(ln net.Listener) {
 		}
 
 		ctx := NewContext(conn, s)
-		s.core.mds.run(ctx)
+		go s.core.mds.run(ctx)
 	}
 }

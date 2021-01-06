@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/eavesmy/golang-lib/context"
 	"io"
-	"io/ioutil"
+	// "io/ioutil"
 	"net"
 	"net/http"
 )
@@ -29,6 +29,14 @@ type Context struct {
 	RemoteAddr string
 
 	IsHttp bool
+
+	buffer_read []byte
+	read        int
+	buffer_pool []byte
+
+	ParseBodyByHand func(i interface{}) error
+	EventClose      func(*Context) error
+	EventAfterClose func(*Context) error
 }
 
 func NewHttpContext(req *http.Request, res http.ResponseWriter) *Context {
@@ -47,10 +55,13 @@ func NewHttpContext(req *http.Request, res http.ResponseWriter) *Context {
 
 func NewContext(conn net.Conn, server *Server) *Context {
 	return &Context{
-		conn:   conn,
-		server: server,
-		Body:   bufio.NewReader(conn),
-		ctx:    context.New(),
+		conn:        conn,
+		server:      server,
+		Body:        bufio.NewReader(conn),
+		ctx:         context.New(),
+		buffer_read: make([]byte, server.core.Conf.BufferSize),
+		buffer_pool: []byte{},
+		read:        0,
 	}
 }
 
@@ -75,11 +86,56 @@ func (c *Context) Get(k interface{}) interface{} {
 	return c.ctx.Get(k)
 }
 
-func (c *Context) ParseBody(i interface{}) interface{} {
+// Default parse method. Just parse json format.
+func (c *Context) ParseBody(i interface{}) error {
 
-	b, _ := ioutil.ReadAll(c.Body)
-	json.Unmarshal(b, &i)
-	return i
+	if c.ParseBodyByHand != nil {
+		return c.ParseBodyByHand(i)
+	}
+
+	index, err := c.Body.Read(c.buffer_read[c.read:])
+	c.read += index
+
+	if err != nil {
+		// error
+		return err
+	}
+
+	if len(c.buffer_pool) > 0 {
+		c.buffer_pool = append(c.buffer_pool, c.buffer_read[c.read:]...)
+
+		err := read(c.buffer_pool, &i)
+
+		if err != nil { // try read
+			c.buffer_pool = []byte{}
+			c.buffer_read = make([]byte, c.server.core.Conf.BufferSize)
+			c.read = 0
+
+			return nil
+		}
+	}
+
+	err = json.Unmarshal(c.buffer_read[:c.read], &i)
+
+	if err != nil {
+		// Wait next data.
+		fmt.Println(err)
+	} else {
+		c.buffer_read = make([]byte, c.server.core.Conf.BufferSize)
+		c.read = 0
+	}
+
+	if c.read >= c.server.core.Conf.BufferSize {
+		c.read = 0
+		c.buffer_pool = append(c.buffer_pool, c.buffer_read[c.read:]...)
+		c.buffer_read = make([]byte, c.server.core.Conf.BufferSize)
+	}
+
+	return nil
+}
+
+func read(b []byte, i interface{}) error {
+	return json.Unmarshal(b, i)
 }
 
 func (c *Context) Call(pattern string, arg interface{}) {
@@ -88,6 +144,21 @@ func (c *Context) Call(pattern string, arg interface{}) {
 }
 
 func (c *Context) ReCall() {}
+
+// 关闭当前链接
+func (c *Context) Close() {
+
+	if c.EventClose != nil {
+		c.EventClose(c)
+	}
+
+	c.conn.Close() // 关闭 conn
+	c.ctx.Cancel()
+
+	if c.EventAfterClose != nil {
+		c.EventAfterClose(c)
+	}
+}
 
 func (c *Context) Json(i interface{}, statusCodes ...int) (err error) {
 	statusCode := 200
@@ -130,15 +201,10 @@ func (c *Context) Text(text string, statusCodes ...int) (err error) {
 // Just Http.
 func (c *Context) Write(d []byte) (i int, err error) {
 
-	// statusCode := 200
-	// if len(statusCodes) > 0 {
-	// statusCode = statusCodes[0]
-	// }
+	statusCode := c.Get("StatusCode").(int)
 
-	// 少一个状态码
-
-	statusText := http.StatusText(c.Res.(Res).StatusCode)
-	status := fmt.Sprintf("%d", c.Res.(Res).StatusCode) + " " + statusText
+	statusText := http.StatusText(statusCode)
+	status := fmt.Sprintf("%d", statusCode) + " " + statusText
 
 	c.Res.Header().Add("Content-Type", http.DetectContentType(d))
 	c.Res.Header().Add("server", "puppy/1.0.0")
