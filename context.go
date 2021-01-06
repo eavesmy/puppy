@@ -145,14 +145,11 @@ func (c *Context) Write(d []byte) (i int, err error) {
 
 	buffer := bytes.NewBuffer([]byte{})
 	c.Res.Header().Write(buffer)
-	// fmt.Println(string(buffer.Bytes()), 12333)
 	res := []byte{}
 	res = append(res, []byte(c.Res.(Res).Proto+" "+status+"\n")...)
 	res = append(res, buffer.Bytes()...)
 	res = append(res, []byte("\n\r")...)
 	res = append(res, d...)
-
-	fmt.Println(string(res))
 
 	i, err = c.conn.Write(res)
 	if c.IsHttp {
