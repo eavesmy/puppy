@@ -28,6 +28,7 @@ go get github.com/eavesmy/puppy
 package main
 
 import "github.com/eavesmy/puppy"
+import "github.com/eavesmy/puppy/middleware"
 import "fmt"
 
 func main(){
@@ -40,10 +41,10 @@ func main(){
         Type:    1,
     })
 
-    node.Rpc("user.name", func(ctx *puppy.Context) string {
+    node.Use(middleware.HttpSupport)
 
+    node.Rpc("user.name", func(ctx *puppy.Context) string {
         // in your program, arg could be typed struct.
-            
         // call remote service method 'name'
         return ctx.Call("name")
     })
