@@ -40,12 +40,17 @@ func main(){
         Type:    1,
     })
 
-    node.Rpc("user.name", func(ctx *puppy.Context, arg interface{}) string {
+    node.Rpc("user.name", func(ctx *puppy.Context) string {
 
         // in your program, arg could be typed struct.
             
         // call remote service method 'name'
         return ctx.Call("name")
+    })
+    
+    // Handle http request
+    node.Post("user.name", func(ctx *puppy.Context) error {
+        return nil
     })
 
     if err := node.Run(":8080"); err != nil {

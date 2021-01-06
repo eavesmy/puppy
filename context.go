@@ -2,8 +2,12 @@ package puppy
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/eavesmy/golang-lib/context"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 )
@@ -23,6 +27,8 @@ type Context struct {
 
 	Body       io.Reader
 	RemoteAddr string
+
+	IsHttp bool
 }
 
 func NewHttpContext(req *http.Request, res http.ResponseWriter) *Context {
@@ -35,6 +41,7 @@ func NewHttpContext(req *http.Request, res http.ResponseWriter) *Context {
 		RemoteAddr: req.RemoteAddr,
 		Path:       req.RequestURI,
 		Length:     req.ContentLength,
+		IsHttp:     true,
 	}
 }
 
@@ -68,8 +75,11 @@ func (c *Context) Get(k interface{}) interface{} {
 	return c.ctx.Get(k)
 }
 
-func (c *Context) ParseBody() {
+func (c *Context) ParseBody(i interface{}) interface{} {
 
+	b, _ := ioutil.ReadAll(c.Body)
+	json.Unmarshal(b, &i)
+	return i
 }
 
 func (c *Context) Call(pattern string, arg interface{}) {
@@ -79,13 +89,32 @@ func (c *Context) Call(pattern string, arg interface{}) {
 
 func (c *Context) ReCall() {}
 
-func (c *Context) Json() {}
+func (c *Context) Json(i interface{}, statusCodes ...int) (err error) {
+	statusCode := 200
+	if len(statusCodes) > 0 {
+		statusCode = statusCodes[0]
+	}
+
+	b, err := json.Marshal(i)
+	if err != nil {
+		return
+	}
+
+	if c.Res != nil {
+		c.Res.WriteHeader(statusCode)
+		_, err = c.Res.Write(b)
+	} else if c.conn != nil {
+		_, err = c.conn.Write(b)
+	}
+
+	return
+}
 
 func (c *Context) Text(text string, statusCodes ...int) (err error) {
 
 	statusCode := 200
 	if len(statusCodes) > 0 {
-		statusCode = statusCodes[2]
+		statusCode = statusCodes[0]
 	}
 
 	if c.Res != nil {
@@ -94,5 +123,41 @@ func (c *Context) Text(text string, statusCodes ...int) (err error) {
 	} else if c.conn != nil {
 		_, err = c.conn.Write([]byte(text))
 	}
+	return
+}
+
+// Support Res.Write
+// Just Http.
+func (c *Context) Write(d []byte) (i int, err error) {
+
+	// statusCode := 200
+	// if len(statusCodes) > 0 {
+	// statusCode = statusCodes[0]
+	// }
+
+	// 少一个状态码
+
+	statusText := http.StatusText(c.Res.(Res).StatusCode)
+	status := fmt.Sprintf("%d", c.Res.(Res).StatusCode) + " " + statusText
+
+	c.Res.Header().Add("Content-Type", http.DetectContentType(d))
+	c.Res.Header().Add("server", "puppy/1.0.0")
+
+	buffer := bytes.NewBuffer([]byte{})
+	c.Res.Header().Write(buffer)
+	// fmt.Println(string(buffer.Bytes()), 12333)
+	res := []byte{}
+	res = append(res, []byte(c.Res.(Res).Proto+" "+status+"\n")...)
+	res = append(res, buffer.Bytes()...)
+	res = append(res, []byte("\n\r")...)
+	res = append(res, d...)
+
+	fmt.Println(string(res))
+
+	i, err = c.conn.Write(res)
+	if c.IsHttp {
+		c.conn.Close()
+	}
+
 	return
 }

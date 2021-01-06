@@ -113,13 +113,15 @@ func (r *Router) Serve(ctx *Context) (err error) {
 	}
 
 	matched := r.trie.Match(ctx.Path)
+	// 找不到对应节点
 
 	if matched.Node == nil {
-		return
+		return ctx.Text("invalid method")
 	}
 
 	ok := false
 	if handler, ok = matched.Node.GetHandler(ctx.Method).(Middleware); !ok {
+
 		return
 	}
 
