@@ -3,6 +3,7 @@ package middleware
 import (
 	"bufio"
 	"github.com/eavesmy/puppy"
+	"github.com/go-http-utils/cookie"
 	"net/http"
 )
 
@@ -26,6 +27,9 @@ func HttpSupport(ctx *puppy.Context) error {
 		ProtoMajor: 1,
 		ProtoMinor: 0,
 	}
+
+	ctx.Cookies = cookie.New(ctx.Res, ctx.Req)
+
 	ctx.IsHttp = true
 
 	return nil

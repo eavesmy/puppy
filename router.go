@@ -25,7 +25,7 @@ func NewRouter(confs ...RouterConf) *Router {
 		conf = confs[0]
 	}
 
-	if conf.Root == "" || conf.Root[len(conf.Root)-1] != '/' {
+	if conf.Root != "" && conf.Root[0] != '/' {
 		conf.Root += "/"
 	}
 
@@ -90,6 +90,8 @@ func (r *Router) Handle(method, pattern string, handlers ...Middleware) *Router 
 		pattern = "/" + pattern
 	}
 
+	pattern = r.Root + pattern
+
 	r.trie.Define(pattern).Handle(strings.ToUpper(method), compose(handlers...))
 	return r
 }
@@ -113,11 +115,10 @@ func (r *Router) Serve(ctx *Context) (err error) {
 	}
 
 	matched := r.trie.Match(ctx.Path)
-
 	// 找不到对应节点
 
 	if matched.Node == nil {
-		return ctx.Text("invalid method")
+		return ctx.Text("invalid method", 405)
 	}
 
 	ok := false

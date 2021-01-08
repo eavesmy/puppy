@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/eavesmy/golang-lib/context"
+	"github.com/go-http-utils/cookie"
 	"io"
 	// "io/ioutil"
 	"net"
@@ -18,8 +19,9 @@ type Context struct {
 	ctx    *context.Ctx
 	server *Server
 
-	Req *http.Request
-	Res http.ResponseWriter
+	Req     *http.Request
+	Res     http.ResponseWriter
+	Cookies *cookie.Cookies
 
 	Method string
 	Path   string
@@ -37,20 +39,6 @@ type Context struct {
 	ParseBodyByHand func(i interface{}) error
 	EventClose      func(*Context) error
 	EventAfterClose func(*Context) error
-}
-
-func NewHttpContext(req *http.Request, res http.ResponseWriter) *Context {
-	return &Context{
-		Body:       req.Body,
-		ctx:        context.New(),
-		Req:        req,
-		Res:        res,
-		Method:     req.Method,
-		RemoteAddr: req.RemoteAddr,
-		Path:       req.RequestURI,
-		Length:     req.ContentLength,
-		IsHttp:     true,
-	}
 }
 
 func NewContext(conn net.Conn, server *Server) *Context {
@@ -206,11 +194,15 @@ func (c *Context) Write(d []byte) (i int, err error) {
 	statusText := http.StatusText(statusCode)
 	status := fmt.Sprintf("%d", statusCode) + " " + statusText
 
+	// Header
 	c.Res.Header().Add("Content-Type", http.DetectContentType(d))
 	c.Res.Header().Add("server", "puppy/1.0.0")
 
 	buffer := bytes.NewBuffer([]byte{})
 	c.Res.Header().Write(buffer)
+
+	// Cookies
+
 	res := []byte{}
 	res = append(res, []byte(c.Res.(Res).Proto+" "+status+"\n")...)
 	res = append(res, buffer.Bytes()...)

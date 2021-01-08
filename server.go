@@ -4,18 +4,12 @@ import (
 	// "bufio"
 	"fmt"
 	"net"
-	"net/http"
 )
 
 type Server struct {
 	conn net.Conn
 	http bool
 	core *Puppy
-}
-
-func (s *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	ctx := NewHttpContext(req, res)
-	s.core.mds.run(ctx)
 }
 
 func (s *Server) Listen(p *Puppy) (err error) {
