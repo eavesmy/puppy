@@ -21,7 +21,6 @@ type Conf struct {
 	ReconnectTimeout  time.Duration // default 5 second
 	Node              string
 	addr              string
-	Http              bool
 
 	IngoreCase bool
 }

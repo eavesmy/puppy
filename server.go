@@ -32,6 +32,9 @@ func (s *Server) Listen(p *Puppy) (err error) {
 
 	fmt.Println("server start at", p.Conf.addr)
 
+	// init node
+	// broadcast slef.
+
 	// if isHttp {
 	// ln.Addr()
 	// err = http.Serve(ln, s)
