@@ -2,16 +2,16 @@
 一个学习的过程，从 0 开始搭建一套完整的服务器框架，支持 http/tcp。
 
 # 模块
-[] Gate
-[] Socket
-[] Http protocol
-[] Gob protocol(for rpc)
-[] Router
-[] Middleware
-[] Service discovery
-[] NodeManager
-[] Rprc
-[] Log
+[] Gate     
+[x] Socket     
+[x] Http protocol      
+[] Gob protocol(for rpc)      
+[x] Router      
+[x] Middleware      
+[] Service discovery      
+[] NodeManager      
+[] Rprc      
+[] Log       
 
 # 目标
 达成一个高可用的rpc框架,使用co模型来处理数据流,能自由插拔中间件。    
@@ -41,7 +41,7 @@ func main(){
         Type:    1,
     })
 
-    node.Use(middleware.HttpSupport)
+    node.Use(middleware.HttpSupport) // The middleware must be load before router for support http protocol.
 
     node.Rpc("user.name", func(ctx *puppy.Context) string {
         // in your program, arg could be typed struct.
