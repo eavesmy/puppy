@@ -1,6 +1,7 @@
 package puppy
 
 import (
+	// remove gtype
 	"github.com/teambition/trie-mux"
 	"net/http"
 	"strings"
