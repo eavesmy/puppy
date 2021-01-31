@@ -1,7 +1,6 @@
 package puppy
 
 import (
-	"github.com/eavesmy/golang-lib/type"
 	"github.com/teambition/trie-mux"
 	"net/http"
 	"strings"
