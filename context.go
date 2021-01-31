@@ -159,6 +159,8 @@ func (c *Context) Json(i interface{}, statusCodes ...int) (err error) {
 		return
 	}
 
+	c.Res.Header().Add("Content-Type", "application/json")
+
 	if c.Res != nil {
 		c.Res.WriteHeader(statusCode)
 		_, err = c.Res.Write(b)
@@ -189,13 +191,18 @@ func (c *Context) Text(text string, statusCodes ...int) (err error) {
 // Just Http.
 func (c *Context) Write(d []byte) (i int, err error) {
 
-	statusCode := c.Get("StatusCode").(int)
+	statusCode := 200
+	if s_statusCode := c.Get("StatusCode"); s_statusCode != nil {
+		statusCode = s_statusCode.(int)
+	}
 
 	statusText := http.StatusText(statusCode)
 	status := fmt.Sprintf("%d", statusCode) + " " + statusText
 
 	// Header
-	c.Res.Header().Add("Content-Type", http.DetectContentType(d))
+	if c.Res.Header().Get("Content-Type") == "" {
+		c.Res.Header().Add("Content-Type", http.DetectContentType(d))
+	}
 	c.Res.Header().Add("server", "puppy/1.0.0")
 
 	buffer := bytes.NewBuffer([]byte{})
