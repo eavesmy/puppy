@@ -45,7 +45,7 @@ func (r *Router) Rpc(pattern string, handlers ...Middleware) *Router {
 		}
 	*/
 
-	if gtype.Index(pattern, 0) != "/" {
+	if string([]rune(pattern)[0]) != "/" {
 		pattern = "/" + pattern
 	}
 
@@ -86,7 +86,7 @@ func (r *Router) Handle(method, pattern string, handlers ...Middleware) *Router 
 		panic("required method.")
 	}
 
-	if gtype.Index(pattern, 0) != "/" {
+	if string([]rune(pattern)[0]) != "/" {
 		pattern = "/" + pattern
 	}
 
@@ -110,7 +110,7 @@ func (r *Router) Serve(ctx *Context) (err error) {
 		ctx.Path = "/"
 	}
 
-	if gtype.Index(ctx.Path, 0) != "/" {
+	if string([]rune(pattern)[0]) != "/" {
 		ctx.Path = "/" + ctx.Path
 	}
 
