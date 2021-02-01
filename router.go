@@ -4,6 +4,7 @@ import (
 	// remove gtype
 	"github.com/teambition/trie-mux"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -113,6 +114,11 @@ func (r *Router) Serve(ctx *Context) (err error) {
 	if string([]rune(ctx.Path)[0]) != "/" {
 		ctx.Path = "/" + ctx.Path
 	}
+
+	url, _ := url.Parse(ctx.Path)
+	ctx.Path = url.EscapedPath()
+
+	ctx.Query = url.Query()
 
 	matched := r.trie.Match(ctx.Path)
 	// 找不到对应节点
