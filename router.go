@@ -110,7 +110,7 @@ func (r *Router) Serve(ctx *Context) (err error) {
 		ctx.Path = "/"
 	}
 
-	if string([]rune(pattern)[0]) != "/" {
+	if string([]rune(ctx.Path)[0]) != "/" {
 		ctx.Path = "/" + ctx.Path
 	}
 
