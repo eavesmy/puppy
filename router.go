@@ -4,6 +4,7 @@ import (
 	// remove gtype
 	"github.com/teambition/trie-mux"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -90,6 +91,10 @@ func (r *Router) Handle(method, pattern string, handlers ...Middleware) *Router 
 		pattern = "/" + pattern
 	}
 
+	if r.Root == "/" {
+		r.Root = ""
+	}
+
 	pattern = r.Root + pattern
 
 	r.trie.Define(pattern).Handle(strings.ToUpper(method), compose(handlers...))
@@ -114,11 +119,17 @@ func (r *Router) Serve(ctx *Context) (err error) {
 		ctx.Path = "/" + ctx.Path
 	}
 
+	_url, _ := url.Parse(ctx.Path)
+	ctx.Query = _url.Query()
+	ctx.Path = _url.EscapedPath()
+
 	matched := r.trie.Match(ctx.Path)
 	// 找不到对应节点
 
 	if matched.Node == nil {
-		return ctx.Text("invalid method", 405)
+
+		// 404
+		return ctx.Text("not found", 404)
 	}
 
 	ok := false

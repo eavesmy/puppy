@@ -8,6 +8,7 @@ import (
 	"github.com/eavesmy/golang-lib/context"
 	"github.com/go-http-utils/cookie"
 	"io"
+	"net/url"
 	// "io/ioutil"
 	"net"
 	"net/http"
@@ -22,6 +23,7 @@ type Context struct {
 	Req     *http.Request
 	Res     http.ResponseWriter
 	Cookies *cookie.Cookies
+	Query   url.Values
 
 	Method string
 	Path   string
