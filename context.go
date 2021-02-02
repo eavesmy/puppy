@@ -23,11 +23,12 @@ type Context struct {
 	Req     *http.Request
 	Res     http.ResponseWriter
 	Cookies *cookie.Cookies
-	Query   url.Values
+	Status  int
 
 	Method string
 	Path   string
 	Length int64
+	Query  url.Values
 
 	Body       io.Reader
 	RemoteAddr string
@@ -219,6 +220,7 @@ func (c *Context) Write(d []byte) (i int, err error) {
 	res = append(res, d...)
 
 	i, err = c.conn.Write(res)
+
 	if c.IsHttp {
 		c.conn.Close()
 	}

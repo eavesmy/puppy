@@ -1,5 +1,9 @@
 package puppy
 
+import (
+	"fmt"
+)
+
 type Handler interface {
 	Serve(ctx *Context) error
 }
@@ -13,7 +17,9 @@ type middlewares []Middleware
 func (m middlewares) run(ctx *Context) (err error) {
 
 	for _, fn := range m {
-		fn(ctx)
+		if err := fn(ctx); err != nil {
+			fmt.Println(err)
+		}
 	}
 	return
 }
