@@ -123,6 +123,10 @@ func (r *Router) Serve(ctx *Context) (err error) {
 	ctx.Query = _url.Query()
 	ctx.Path = _url.EscapedPath()
 
+	if ctx.Path == "" {
+		ctx.Path = "/"
+	}
+
 	matched := r.trie.Match(ctx.Path)
 	// 找不到对应节点
 
