@@ -1,83 +1,54 @@
+/************************************************
+		Welcome to use puppy service framework.
+/************************************************/
+
 package puppy
 
-import (
-	"fmt"
-	"github.com/teambition/trie-mux"
-)
-
-type Puppy struct {
-	Server *Server
-	Conf   Conf
-	mds    middlewares
-	router *Router
-	trie   *trie.Trie
+type Option struct {
+	Name     string // App name. [option]
+	Group    int    // App belongs gourp id. [option]
+	RootNode string // Recent node location. [option]
+	id       uint8  // App id.Generate automic.
+	location string // App location.
 }
 
-// Init socket server.
-func New(confs ...Conf) *Puppy {
+// Handler interface.
+type Entry interface {
+	Init(*App)
+}
 
-	var conf Conf
-	def := DefaultConf()
+// Service instance.
+type App struct {
+	opt Option
+}
 
-	if len(confs) > 0 {
-		conf = confs[0]
-		if conf.MaxReconnectCount == 0 {
-			conf.MaxReconnectCount = def.MaxReconnectCount
-		}
-		if conf.ReconnectTimeout == 0 {
-			conf.ReconnectTimeout = def.ReconnectTimeout
-		}
-		if conf.BufferSize == 0 {
-			conf.BufferSize = def.BufferSize
-		}
+// Create new app.
+func New(options ...Option) (app *App) {
+
+	app = new(App)
+	option := *new(Option)
+
+	if len(options) > 1 {
+		option = options[0]
 	}
 
-	return &Puppy{Conf: conf, Server: &Server{}, trie: trie.New(trie.Options{
-		IgnoreCase:            conf.IngoreCase,
-		FixedPathRedirect:     false,
-		TrailingSlashRedirect: false,
-	})}
-}
-
-// Load middleware
-func (p *Puppy) Use(m Middleware) *Puppy {
-	p.mds = append(p.mds, m)
-	return p
-}
-
-func (p *Puppy) UseHandle(m Handler) *Puppy {
-	p.mds = append(p.mds, m.Serve)
-	return p
-}
-
-func (p *Puppy) MarshalByHand() {
-
-}
-
-func (p *Puppy) ParseByHand() {
-
-}
-
-func (p *Puppy) Run(h_ps ...string) error {
-
-	if len(h_ps) > 0 {
-		p.Conf.addr = h_ps[0]
-	}
-
-	return p.Server.Listen(p)
-}
-
-// func(*Context,interface{}) interface{}
-
-func (p *Puppy) Rpc(pattern string, fn Rpc) {
-
-	method, err := MarshalRpcMethod(pattern, fn)
-
-	if err != nil {
-		panic("Invalid rpc method: " + err.Error())
-	}
-
-	fmt.Println(method)
+	app.opt = option
 
 	return
+}
+
+func (app *App) UseHandler(i Entry) {
+	i.Init(app)
+	// load route.
+}
+
+func (app *App) UseRemote(i Entry) {
+	i.Init(app)
+	// load route.
+}
+
+// listen socket.
+func (app *App) Listen(location string) {
+	// listen socket
+	// hybridg protocal.
 }
